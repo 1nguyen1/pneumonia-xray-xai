@@ -16,10 +16,10 @@ A model can score high on chest X-rays while looking at the wrong things, such a
 
 | Step | What | Script | Result |
 |---|---|---|---|
-| 1 | Train an image-only DenseNet121 (RadImageNet weights) and inspect it with Grad-CAM | `classifier/`, `explain/gradcam_image_only.py` | 97.2% accuracy, but some heat-maps fell outside the lungs |
+| 1 | Train an image-only DenseNet121 (RadImageNet weights) and inspect it with Grad-CAM | `classifier/`, `explain/gradcam_image_only.py` | 97.2% on the Kaggle test set (intermediate), but some heat-maps fell outside the lungs |
 | 2 | Train a U-Net to segment the lungs | `segmentation/train_unet.py` | validation Dice **0.956** |
-| 3 | Cut out the lungs in the whole dataset, then retrain DenseNet121 on lung-only images | `preprocessing/mask_dataset.py`, `classifier/` | 5,856 images masked; **95.3%** test accuracy |
-| 4 | Combine lung-only image + age + sex (late fusion) with class weights | `fusion/train_fusion.py` | **AUC 0.715**; Normal recall 29% → 70% |
+| 3 | Cut out the lungs in the whole dataset, then retrain DenseNet121 on lung-only images | `preprocessing/mask_dataset.py`, `classifier/` | 5,856 images masked; 95.3% on the Kaggle test set (intermediate) |
+| 4 | **Final model:** combine lung-only image + age + sex (late fusion) with class weights | `fusion/train_fusion.py` | **65% accuracy, AUC 0.715** |
 | 5 | Explain and deploy | `explain/gradcam_shap.py`, `app/app.py` | Lung-masked Grad-CAM, SHAP, Gradio app |
 
 ## Pipeline
@@ -39,12 +39,14 @@ Age, Sex ──► small MLP (64 → 32) ─────────────
 
 ## Results
 
-| Model | Data | Accuracy | Recall Pneumonia | Recall Normal |
-|---|---|---|---|---|
-| DenseNet121, full image | Kaggle *chest-xray-covid19-pneumonia* test set (1,172 images) | 97.2% | 97.1% | 97.5% |
-| DenseNet121, lung-only image | same test set | 95.3% | 96.1% | 93.1% |
-| Fusion, no class weights | CheXpert subset (10,000 sampled), validation 1,768 | 71% (AUC 0.707) | 90% | 29% |
-| **Fusion, class-weighted (final model)** | same validation set | 65.3% (**AUC 0.715**) | 63.2% | **70.0%** |
+> **The final model is the last row.** Its numbers are produced in `notebooks/final_pipeline.ipynb`. The other rows are intermediate steps kept to show how the project developed. Rows 1–2 were evaluated on a different, easier dataset (Kaggle) outside the final notebook, so they are **not** comparable with the final result.
+
+| Stage | Model | Data | Accuracy | Recall Pneumonia | Recall Normal |
+|---|---|---|---|---|---|
+| Step 1 (intermediate) | DenseNet121, full image | Kaggle *chest-xray-covid19-pneumonia* test set (1,172 images) | 97.2% | 97.1% | 97.5% |
+| Step 3 (intermediate) | DenseNet121, lung-only image (later used as the frozen image branch of the final model) | same Kaggle test set | 95.3% | 96.1% | 93.1% |
+| Earlier run | Fusion, no class weights | CheXpert subset (10,000 sampled), validation 1,768 | 71% (AUC 0.707) | 90% | 29% |
+| **Step 4 — FINAL** | **Fusion, class-weighted** | same CheXpert validation set | 65.3% (**AUC 0.715**) | 63.2% | **70.0%** |
 
 - **U-Net:** validation Dice 0.956 (704 image–mask pairs, 85/15 split).
 - Masking the lungs costs about 2 points of accuracy, but the model's evidence now comes from lung tissue instead of the image borders.
