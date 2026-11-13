@@ -1,0 +1,11 @@
+tensorflow==2.15.0
+numpy
+pandas
+scikit-learn
+opencv-python-headless
+matplotlib
+seaborn
+tqdm
+shap
+kagglehub
+gradio
