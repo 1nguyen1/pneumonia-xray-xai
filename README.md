@@ -4,8 +4,6 @@
 
 Student research project (Ho Chi Minh City University of Technology, VNU-HCM), Apr–May 2026.
 
-> ⚠️ Research and education only. This is **not** a medical device and must not be used for clinical decisions.
-
 **Live demo (Hugging Face Space):** https://huggingface.co/spaces/babyG36/multimodal_pneumonia_unet_AI
 
 ---
