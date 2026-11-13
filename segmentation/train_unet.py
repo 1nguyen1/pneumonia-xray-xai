@@ -191,3 +191,4 @@ history = model.fit(
 )
 
 print("\n-> CHÚC MỪNG! ĐÃ TRAIN XONG U-NET VÀ LƯU TẠI GOOGLE DRIVE!")
+# Kết quả lần chạy cuối: val_dice_coef tốt nhất = 0.956 (epoch 30/30)

@@ -9,6 +9,7 @@ import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import confusion_matrix, classification_report, roc_curve, auc
+from sklearn.utils.class_weight import compute_class_weight
 from tensorflow.keras.utils import Sequence
 from tensorflow.keras.layers import Input, Dense, GlobalAveragePooling2D, Concatenate, BatchNormalization, LeakyReLU, Dropout
 from tensorflow.keras.models import Model, load_model
@@ -200,10 +201,18 @@ if __name__ == "__main__":
     early_stop = EarlyStopping(monitor='val_auc', mode='max', patience=5, restore_best_weights=True)
     csv_logger = CSVLogger(HISTORY_CSV_PATH, append=False) # Ghi nhật ký vào CSV
 
+    # Class weights tính từ nhãn tập Train (NORMAL ~1.58, PNEUMONIA ~0.73)
+    y_train = train_df['Pneumonia'].values
+    classes = np.unique(y_train)
+    weights = compute_class_weight(class_weight='balanced', classes=classes, y=y_train)
+    class_weights_dict = dict(zip(classes, weights))
+    print(f"Class weights: NORMAL={class_weights_dict[0]:.2f}, PNEUMONIA={class_weights_dict[1]:.2f}")
+
     history = model.fit(
         train_gen,
         validation_data=val_gen,
         epochs=30,
+        class_weight=class_weights_dict,
         callbacks=[early_stop, csv_logger]
     )
 
